@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Http\Controllers\Front;
+
+use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
+
+class ProductController extends Controller
+{
+    public function index(): LengthAwarePaginator
+    {
+        return Product::select('id', 'category_id', 'slug', 'name', 'cover_image', 'price')
+            ->with(['category:id,name'])
+            ->paginate();
+    }
+    public function show(Product $product): Product
+    {
+        return $product->load('category:id,name');
+    }
+    public function getRelatedProducts(Category $category): LengthAwarePaginator
+    {
+        return $category->products()
+            ->select('id', 'category_id', 'name', 'cover_image', 'price')
+            // ->addSelect('categories.id as category_id', 'categories.name as category_name', 'categories.slug as category_slug')
+            ->paginate();
+    }
+}
