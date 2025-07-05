@@ -63,7 +63,7 @@ class UserController extends Controller
      */
     public function show(UserTypes $userType, User $user): User
     {
-        return  $this->userService->show($user);
+        return $this->userService->show($user);
     }
 
     /**
@@ -75,7 +75,7 @@ class UserController extends Controller
     public function update(UserRequest $request, UserTypes $userType, User $user): JsonResponse
     {
         $this->userService->update($user, $request->validated());
-        return  response()->json(['message' => 'User updated successfully'], 200);
+        return response()->json(['message' => 'User updated successfully'], 200);
     }
 
     /**
@@ -88,7 +88,12 @@ class UserController extends Controller
         $this->userService->delete($user);
 
         return Response::json([
-            'message' =>  "Delete {$user->full_name} Successflly",
+            'message' => "Delete {$user->full_name} Successflly",
         ]);
+    }
+
+    public function fetchAllDrivers()
+    {
+        return User::where('type', UserTypes::Driver->value)->get();
     }
 }

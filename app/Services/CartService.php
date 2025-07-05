@@ -15,8 +15,8 @@ class CartService
     public function getAllItems(): Collection
     {
         return Auth::user()->cartItems()->with([
-            'products:id,name,cover_image,category_id,price',
-            'products.category:id,name'
+            'product:id,name,cover_image,category_id,price',
+            'product.category:id,name'
         ])->get();
     }
 

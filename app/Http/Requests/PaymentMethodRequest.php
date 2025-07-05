@@ -41,7 +41,7 @@ class PaymentMethodRequest extends FormRequest
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['sometimes', 'required', 'nullable'],
-            'status' => ['sometimes', 'required', Rule::enum(PaymentGatewayMethodStatus::class)],
+            'is_active' => ['sometimes', 'required', 'in:0,1'],
         ], $optionsValidation);
     }
 }

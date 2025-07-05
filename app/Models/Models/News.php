@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Contracts\HasImagable;
-use App\Enums\BlogStatus;
-use App\Observers\BlogObserver;
+use App\Enums\NewsStatus;
+use App\Observers\NewsObserver;
 use App\Services\ImageService;
 use App\Traits\HasImage;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
-class Blog extends Model
+class News extends Model
 {
     use HasFactory, HasImage;
 
-    const FOLDER = 'blogs';
+    const FOLDER = 'news';
 
     protected $appends = [
         'image',
@@ -45,7 +45,7 @@ class Blog extends Model
     protected function casts(): array
     {
         return [
-            'status' => BlogStatus::class,
+            'status' => NewsStatus::class,
             'published_at' => 'datetime',
             'text' => 'array',
         ];
@@ -65,7 +65,7 @@ class Blog extends Model
 
     protected static function booted(): void
     {
-        static::observe(BlogObserver::class);
+        static::observe(NewsObserver::class);
     }
 
     public function scopeFilter(Builder $builder, ?object $data = null)
@@ -83,13 +83,13 @@ class Blog extends Model
                 $builder->orderBy($value, $sortOrder);
             }
             if ($value == 'category_name') {
-                return $builder->leftJoin('categories', 'categories.id', '=', 'blogs.id')
-                    ->select(['blogs.*'])
+                return $builder->leftJoin('categories', 'categories.id', '=', 'news.id')
+                    ->select(['news.*'])
                     ->orderBy('categories.name', $sortOrder);
             }
         });
         $builder->when($data->status ?? false, function (Builder $builder, string $value) {
-            if (BlogStatus::tryFrom(strtolower($value))) {
+            if (NewsStatus::tryFrom(strtolower($value))) {
                 $builder->where('status', $value);
             }
         });

@@ -71,7 +71,7 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            OrderCreated::dispatch($order->load('customer'));
+            OrderCreated::dispatch($order->load(['customer', 'shippingAddress.city']));
 
             return Response::json([
                 'message' => 'created order successfly',
@@ -92,9 +92,9 @@ class CheckoutController extends Controller
             'items.product:id,slug,name,price',
             'items.product.category:id,slug'
         ])->where([
-            'id' => $id,
-            'user_id' => Auth::guard('sanctum')->id(),
-        ])->first();
+                    'id' => $id,
+                    'user_id' => Auth::guard('sanctum')->id(),
+                ])->first();
         return $order ? $order : Response::json([
             'message' => 'order not found',
         ]);
@@ -111,9 +111,9 @@ class CheckoutController extends Controller
             'items.product:id,slug,name,price',
             'items.product.category:id,slug'
         ])->where([
-            'id' => $id,
-            'user_id' => Auth::guard('sanctum')->id(),
-        ])->first();
+                    'id' => $id,
+                    'user_id' => Auth::guard('sanctum')->id(),
+                ])->first();
         if ($order->status == OrderStatus::Pending) {
             $status = $request->post('status', $order->status);
             $method = $request->post('pay_method', $order->method);

@@ -25,8 +25,11 @@ class ProfileResource extends JsonResource
             'billing_address' => [
                 'phone_number' => $this->billingAddress?->phone_number,
                 'street' => $this->billingAddress?->street,
-                'city' => $this->billingAddress?->city->name,
-                'note' => $this->billingAddress?->note,
+                'city' => [
+                    'id' => $this->billingAddress?->city?->id,
+                    'name' => $this->billingAddress?->city?->name,
+                ],
+                'notes' => $this->billingAddress?->notes,
             ]
         ];
     }

@@ -5,11 +5,12 @@ use App\Http\Controllers\AbilityController;
 use App\Http\Controllers\Auth\AccessTokenController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthSocialiteController;
-use App\Http\Controllers\Dashboard\BlogController;
+use App\Http\Controllers\Dashboard\NewsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\Dashboard\CategoryController;
+// use App\Http\Controllers\Dashboard\FetchAllDrivers;
 use App\Http\Controllers\Dashboard\MemberController;
 use App\Http\Controllers\Dashboard\OrderController as DashboardOrderController;
 use App\Http\Controllers\Dashboard\ProductController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\PaymentMethodController as DashboardPaymentMethodController;
 use App\Http\Controllers\Front\CheckoutController;
+use App\Http\Controllers\Front\FavoriteController;
 use App\Http\Controllers\Front\PaymentMethodController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\NotificationController;
@@ -38,9 +40,9 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::prefix('/blogs')->controller(\App\Http\Controllers\Front\BlogController::class)->group(function () {
+Route::prefix('/newss')->controller(\App\Http\Controllers\Front\NewsController::class)->group(function () {
     Route::get('/', 'index');
-    Route::get('/{blog}', 'show');
+    Route::get('/{news}', 'show');
 });
 
 Route::prefix('/products')->controller(\App\Http\Controllers\Front\ProductController::class)->group(function () {
@@ -68,6 +70,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::get('/payment-methods', PaymentMethodController::class);
 
+    Route::get('/cities', \App\Http\Controllers\Front\CityController::class);
+
     Route::prefix('/cart')->controller(CartController::class)->group(function () {
 
         Route::get('/', 'index');
@@ -88,12 +92,20 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::patch('/', 'update');
     });
 
+    Route::prefix('/my-favorite')->controller(FavoriteController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::post('/', 'store');
+        Route::delete('/{product:id}', 'destroy');
+    });
+
     // Dashboard Routes
     Route::prefix('/dashboard')->group(function () {
 
         Route::get('/', [DashboardController::class, 'index']);
 
         Route::get('/categories/all', [CategoryController::class, 'getAll']);
+
+        // Route::get('/fetch-all-drivers', FetchAllDrivers::class);
 
         Route::prefix('/products')->controller(ProductController::class)
             ->group(function () {
@@ -108,25 +120,30 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::prefix('/orders')->controller(DashboardOrderController::class)
             ->group(function () {
 
-                Route::get('/',  'index');
+                Route::get('/', 'index');
 
-                Route::get('/{order:number}',  'show');
+                Route::get('/{order:number}', 'show');
 
-                Route::put('/{order}/{orderStatus}',  'update');
+                Route::put('/{order:number}/assign-to-driver', 'assignDriver');
+
+                Route::put('/{order}/{orderStatus}', 'update');
             });
 
 
 
         Route::controller(UserController::class)->prefix('/users/{userType}')->group(function () {
-            Route::get('/',  'index');
+            Route::get('/', 'index');
 
-            Route::post('/',  'store');
+            Route::post('/', 'store');
+
+            Route::get('/fetch-all', 'fetchAllDrivers');
 
             Route::get('/{user:email}', 'show');
 
             Route::put('/{user:email}', 'update');
 
             Route::delete('/{user:email}', 'destroy');
+
         })->whereIn('userType', UserTypes::getAllTypes(UserTypes::Admin->value));
 
 
@@ -141,7 +158,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         Route::apiResource('/roles', RoleController::class);
 
-        Route::apiResource('/blogs', BlogController::class);
+        Route::get('/news/get-types', [NewsController::class, 'getNewsTypes']);
+
+        Route::apiResource('/news', NewsController::class);
 
         Route::apiResource('/payment-methods', DashboardPaymentMethodController::class);
 

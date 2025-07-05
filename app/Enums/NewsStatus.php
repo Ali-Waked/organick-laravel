@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum BlogStatus: string
+enum NewsStatus: string
 {
     case Archived = 'archived';
     case Published = 'published';

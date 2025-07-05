@@ -11,15 +11,18 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductController extends Controller
 {
-    public function index(): LengthAwarePaginator
+    public function index(Request $request): LengthAwarePaginator
     {
-        return Product::select('id', 'category_id', 'slug', 'name', 'cover_image', 'price')
+        $products = Product::select('id', 'category_id', 'slug', 'name', 'cover_image', 'price')
+            ->search(json_decode($request->filter))
             ->with(['category:id,name'])
-            ->paginate();
+            ->paginate(12);
+        $products->getCollection()->each->append('isFavorite');
+        return $products;
     }
     public function show(Product $product): Product
     {
-        return $product->load('category:id,name');
+        return $product->load(['category:id,name'])->append('isFavorite');
     }
     public function getRelatedProducts(Category $category): LengthAwarePaginator
     {

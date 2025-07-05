@@ -21,15 +21,18 @@ class ProfileRequest extends FormRequest
      */
     public function rules(): array
     {
+        info(request()->all());
         return [
             'first_name' => ['sometimes', 'required', 'max:100'],
             'last_name' => ['sometimes', 'required', 'max:100'],
             'email' => ['sometimes', 'required', 'max:255', 'email'],
             'birthday' => ['sometimes', 'required'],
             'avatar' => ['sometimes', 'required', 'image'],
-            'street' => ['sometimes', 'required', 'max:255'],
-            'phone_number' => ['sometimes', 'required', 'max:15'],
-            'notes' => ['sometimes', 'required'],
+            'billing_address' => ['sometimes', 'required', 'array'],
+            'billing_address.city_id' => ['sometimes', 'required', 'exists:cities,id'],
+            'billing_address.street' => ['sometimes', 'required', 'max:255'],
+            'billing_address.phone_number' => ['sometimes', 'required', 'max:15'],
+            'billing_address.notes' => ['sometimes', 'required'],
         ];
     }
 }

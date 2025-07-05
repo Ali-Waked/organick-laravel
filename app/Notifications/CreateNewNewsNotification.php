@@ -2,20 +2,20 @@
 
 namespace App\Notifications;
 
-use App\Models\Blog;
+use App\Models\News;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CreateNewBlogNotification extends Notification
+class CreateNewNewsNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(protected Blog $blog)
+    public function __construct(protected News $news)
     {
         //
     }
@@ -49,11 +49,11 @@ class CreateNewBlogNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'name' => $this->blog->author,
+            'name' => $this->news->author,
             // 'email' => $this->data['email'],
-            'subject' => 'add new blog',
-            'message' => $this->blog->title,
-            'created_at' => $this->blog->published_at,
+            'subject' => 'add new news',
+            'message' => $this->news->title,
+            'created_at' => $this->news->published_at,
             'icon' => 'mdi-email-outline',
         ];
     }

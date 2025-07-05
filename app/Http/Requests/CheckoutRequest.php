@@ -28,12 +28,13 @@ class CheckoutRequest extends FormRequest
     {
         return [
             'pay_method' => ['required', Rule::enum(PaymentMethods::class)],
-            'phone_number' => ['required', 'numeric', 'max:15'],
+            'phone_number' => ['required', 'numeric'],
             'street' => ['required'],
-            'country' => ['required', 'string', 'max:2', Rule::in(Countries::getCountryCodes())],
-            'city' => ['required', 'max:255'],
-            'postal_code' => ['required', 'max:255'],
-            'state' => ['required', 'max:255'],
+            'city_id' => ['required', 'integer', 'exists:cities,id'],
+            'note' => ['sometimes', 'required', 'string'],
+            // 'city' => ['required', 'max:255'],
+            // 'postal_code' => ['required', 'max:255'],
+            // 'state' => ['required', 'max:255'],
             'currency' => ['required', 'max:3', Rule::enum(CurrencyCode::class)]
         ];
     }

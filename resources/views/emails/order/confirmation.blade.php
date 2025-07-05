@@ -18,22 +18,20 @@
                 <ul style="color: #274c5b; padding-left: 20px;">
                     @foreach ($order->items as $item)
                         <li>
-                            <span
-                                style="color: #545e62; margin-bottom: 6px;
-                        display: inline-block;">{{ $item->product_name }}</span>
+                            <span style="color: #545e62; margin-bottom: 6px;
+                                                            display: inline-block;">{{ $item->product_name }}</span>
                             <ul style="color: #274c5b; padding-left: 20px;">
                                 <li>
-                                    <span
-                                        style="color: #545e62; margin-bottom: 6px;
-                        display: inline-block;">Quantity:
+                                    <span style="color: #545e62; margin-bottom: 6px;
+                                                            display: inline-block;">Quantity:
                                         {{ $item->quantity }}</span>
                                 </li>
                                 <li>
-                                    <span
-                                        style="color: #545e62; margin-bottom: 6px;
-                        display: inline-block;">Total
+                                    <span style="color: #545e62; margin-bottom: 6px;
+                                                            display: inline-block;">Total
                                         Price:
-                                        {{ Currency::format($item->quantity * $item->price, $order->currency) }}</span>
+                                        {{ App\Helpers\Currency::format($item->quantity * $item->price, $order->currency->value) }}
+                                    </span>
                                 </li>
                             </ul>
                         </li>
@@ -46,19 +44,16 @@
         </p>
         <ul style="color: #274c5b; padding-left: 20px;">
             <li style="margin-bottom: 8px;"><strong>Phone Number:</strong> <span
-                    style="font-weight: bold; text-decoration: underline; color: #3F51B5; margin-left: 4px;">#{{ $order->address->phone_number }}</span>
+                    style="font-weight: bold; text-decoration: underline; color: #3F51B5; margin-left: 4px;">#{{ $order->shippingAddress->phone_number }}</span>
             </li>
-            <li style="margin-bottom: 8px;"><strong>Countery:</strong> <span
-                    style="color: #274c5b">{{ Symfony\Component\Intl\Countries::getName($order->address->country) }}</span>
-            </li>
-            <li style="margin-bottom: 8px;"><strong>Countery:</strong> <span
-                    style="color: #274c5b">{{ $order->address->city }}</span></li>
+            <li style="margin-bottom: 8px;"><strong>City:</strong> <span
+                    style="color: #274c5b">{{ $order->shippingAddress->city->name }}</span></li>
             <li style="margin-bottom: 8px;"><strong>Street:</strong> <span
-                    style="color: #274c5b">{{ $order->address->street }}</span></li>
-            <li style="margin-bottom: 8px;"><strong>State:</strong> <span
-                    style="color: #274c5b">{{ $order->address->state }}</span></li>
-            <li style="margin-bottom: 8px;"><strong>Postal Code:</strong> <span
-                    style="color: #274c5b">{{ $order->address->postal_code }}</span></li>
+                    style="color: #274c5b">{{ $order->shippingAddress->street }}</span></li>
+            @if($order->shippingAddress->note)
+                <li style="margin-bottom: 8px;"><strong>Note:</strong> <span
+                        style="color: #274c5b">{{ $order->shippingAddress->note }}</span></li>
+            @endif
         </ul>
         <div style="color: #274c5b">
             <p style="margin-bottom:6px">We will begin processing your order right away and will send you a notification

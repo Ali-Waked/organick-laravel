@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethods;
-use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
-use App\Models\OrderAddress;
+use App\Models\Address;
 use Illuminate\Container\Attributes\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -22,17 +22,19 @@ class OrderService
 
     public function getOrderWithRelation(Order $order): Order
     {
-        return $order->load(['customer', 'address', 'items.product', 'payment:paymentable_id,status']);
+        info($order->payment->paymentMethod->name);
+        return $order->load(['customer.billingAddress.city', 'shippingAddress.city', 'items.product', 'payment:paymentable_id,status,payment_method_id', 'payment.paymentMethod:id,name', 'driver:id,first_name,last_name,email,type']);
     }
 
     public function updateStatus(Order $order, OrderStatus $orderStatus): bool
     {
+        info($orderStatus->value);
         return $order->update([
-            'status' => $orderStatus->value,
+            'status' => $orderStatus,
         ]);
     }
 
-    public function create(PaymentMethods $paymentMethod, array $data): Order
+    public function create(PaymentMethods $paymentMethod, array $data = []): Order
     {
         if ($paymentMethod->value == PaymentMethods::CashOnDelivery->value) {
             $data['status'] = OrderStatus::Processing;
@@ -40,9 +42,9 @@ class OrderService
         return Order::create($data);
     }
 
-    public  function AddItems(Order $order, Collection $items): Collection
+    public function AddItems(Order $order, Collection $items): Collection
     {
-        $orderItems = $items->map(fn(Cart $item): array => [
+        $orderItems = $items->map(fn(CartItem $item): array => [
             'order_id' => $order->id,
             'product_id' => $item->product_id,
             'quantity' => $item->quantity,
@@ -53,9 +55,9 @@ class OrderService
         return $order->items()->createMany($orderItems);
     }
 
-    public function AddAddress(Order $order, array $data): OrderAddress
+    public function AddAddress(Order $order, array $data): Address
     {
-        return $order->address()->create($data);
+        return $order->shippingAddress()->create($data);
     }
 
     public function getAuthOrder(): LengthAwarePaginator
@@ -68,11 +70,14 @@ class OrderService
     public function getOrderForUser(int $id): Order
     {
         return Auth::user()->orders()
-            ->where('order_id', $id)
+            ->where('number', $id)
             ->with([
                 'items',
-                'items.product:id,slug,name,price',
-                'items.product.category:id,slug'
+                'shippingAddress.city:id,name,driver_price',
+                'items.product:id,slug,name,price,cover_image',
+                'items.product.category:id,slug',
+                'payment:paymentable_type,paymentable_id,payment_method_id',
+                'payment.paymentMethod:name,id'
             ])->first();
     }
 }

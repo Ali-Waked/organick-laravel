@@ -48,8 +48,25 @@ class OrderController extends Controller
     public function update(Order $order, OrderStatus $orderStatus): JsonResponse
     {
         $this->orderService->updateStatus($order, $orderStatus);
-        return Response::json([
+        return response()->json([
             'message' => "update order status to {$orderStatus->value}",
         ]);
     }
+
+    public function assignDriver(Request $request, Order $order)
+    {
+        $request->validate([
+            'driver_id' => ['required', 'exists:users,id'],
+        ]);
+
+        $order->update([
+            'driver_id' => $request->driver_id,
+            'assigned_by_id' => auth()->id(),
+        ]);
+        return response()->json([
+            'message' => 'Driver assigned successfully',
+            // 'order' => $order->load('driver', 'assignedBy'),
+        ]);
+    }
+
 }

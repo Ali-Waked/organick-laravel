@@ -2,11 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\BlogStatus;
+use App\Enums\NewsStatus;
+use App\Enums\NewsType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class BlogRequest extends FormRequest
+class NewsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,21 +24,23 @@ class BlogRequest extends FormRequest
      */
     public function rules(): array
     {
-        $validation  = in_array($this->method(), ['PUT', 'PATCH']) ? ['sometimes', 'required'] : ['required'];
+        $validation = in_array($this->method(), ['PUT', 'PATCH']) ? ['sometimes', 'required'] : ['required'];
         return [
             'image' => [...$validation, 'image'],
             'title' => [...$validation, 'string', 'max:255'],
             'subtitle' => [...$validation, 'string', 'max:255'],
-            'text' => [...$validation],
-            'category_id' => [...$validation, 'int', 'exists:categories,id'],
-            'status' => ['sometimes', 'required', Rule::enum(BlogStatus::class)]
+            'content' => [...$validation],
+            // 'category_id' => [...$validation, 'int', 'exists:categories,id'],
+            'type' => [...$validation, 'string', Rule::enum(NewsType::class)],
+            'is_published' => ['sometimes', 'required', 'in:0,1'],
+            // 'status' => ['sometimes', 'required', Rule::enum(NewsStatus::class)]
         ];
     }
 
     public function messages(): array
     {
         return [
-            'image.required' => 'must be upload image for blog',
+            'image.required' => 'must be upload image for news',
             'status' => 'status must be type of published or archived',
         ];
     }

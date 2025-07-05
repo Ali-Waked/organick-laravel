@@ -36,7 +36,7 @@ class ProfileController extends Controller
     {
         try {
             DB::beginTransaction();
-            $this->profileService->update($request->only(['first_name', 'last_name', 'email', 'avatar', 'bithday']), $request->only(['street', 'notes', 'phone_number']));
+            $this->profileService->update($request->only(['first_name', 'last_name', 'email', 'avatar', 'bithday', 'gender']), $request->only(['billing_address.street', 'billing_address.phone_number', 'billing_address.city_id', 'billing_address.notes']));
             DB::commit();
             return Response::json([
                 'message' => 'update profile successflly',
