@@ -14,3 +14,9 @@ Broadcast::channel('category.created', function ($user) {
     // return $user->email === 'ali.waked@gmail.com';
     return true;
 });
+
+Broadcast::channel('conversation.{id}', function ($user, $id) {
+    return $user->id === \App\Models\Conversation::find($id)?->customer_id
+        || $user->id === \App\Models\Conversation::find($id)?->receiver_id
+        || $user->isAdmin();
+});

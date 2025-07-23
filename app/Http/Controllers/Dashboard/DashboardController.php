@@ -24,6 +24,7 @@ class DashboardController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $type = $request->input('type', 'daily'); // daily, weekly, monthly, yearly
         return Response::json([
             'category' => [
                 'active_count' => Category::where('is_active', true)->count(),
@@ -63,7 +64,7 @@ class DashboardController extends Controller
 
             'last_customers_registered' => User::where('type', UserTypes::Customer)
                 ->orderBy('created_at', 'desc')
-                ->limit(5)
+                ->limit(10)
                 ->get(['id', 'first_name', 'last_name', 'email', 'avatar', 'created_at']),
 
             'last_order_incoming' => Order::with('customer:id,email')->orderBy('created_at', 'desc')
@@ -79,6 +80,34 @@ class DashboardController extends Controller
                     ->groupBy('cities.name')
                     ->orderByDesc('total')
                     ->get(),
+            'order_over_time' => DB::table('orders')
+                ->selectRaw("
+            COUNT(*) as total,
+            CASE 
+                WHEN ? = 'daily' THEN DATE(created_at)
+                WHEN ? = 'weekly' THEN CONCAT(YEAR(created_at), '-W', WEEK(created_at))
+                WHEN ? = 'monthly' THEN DATE_FORMAT(created_at, '%Y-%m')
+                WHEN ? = 'yearly' THEN YEAR(created_at)
+            END as period
+        ", [$type, $type, $type, $type])
+                ->groupBy('period')
+                ->orderBy('period', 'asc')
+                ->get(),
+            'order_by_status' => DB::table('orders')
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->get(),
+            'last_publish_news' => News::where('is_published', true)
+                ->orderBy('published_at', 'desc')
+                ->limit(10)
+                ->get(['id', 'title', 'subtitle', 'slug', 'cover_image']),
+            'income_by_payment_method' => \App\Models\PaymentMethod::withSum([
+                'payments as total_income' => function ($query) {
+                    $query->whereHasMorph('paymentable', [\App\Models\Order::class], function ($q) {
+                        $q->where('status', OrderStatus::Completed);
+                    });
+                }
+            ], 'total_price')->get(['id', 'name'])
 
         ]);
     }

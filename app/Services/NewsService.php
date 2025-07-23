@@ -28,7 +28,7 @@ class NewsService
         if (isset($data['image'])) {
             $data['cover_image'] = $news->uploadImage($data['image'], News::FOLDER);
         }
-
+        info(count($data));
         $news->update($data);
 
         if ($cover_image && isset($data['cover_image'])) {

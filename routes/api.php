@@ -19,11 +19,13 @@ use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\PaymentMethodController as DashboardPaymentMethodController;
 use App\Http\Controllers\Front\CheckoutController;
 use App\Http\Controllers\Front\FavoriteController;
+use App\Http\Controllers\Front\FeedbackController;
 use App\Http\Controllers\Front\PaymentMethodController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\NotificationController;
 use App\Http\Controllers\Dashboard\ServiceController;
 use App\Http\Controllers\Dashboard\CityController;
+use App\Http\Controllers\Front\SearchController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 // use App\Http\Controllers\RoleController;
@@ -32,6 +34,8 @@ use App\Http\Controllers\SubscriberController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\MessageController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -40,22 +44,28 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::prefix('/newss')->controller(\App\Http\Controllers\Front\NewsController::class)->group(function () {
+Route::prefix('/news')->controller(\App\Http\Controllers\Front\NewsController::class)->group(function () {
     Route::get('/', 'index');
     Route::get('/{news}', 'show');
 });
 
 Route::prefix('/products')->controller(\App\Http\Controllers\Front\ProductController::class)->group(function () {
     Route::get('/', 'index');
+    Route::get('/{product}/related', 'getRelatedProducts');
     Route::get('/{product}', 'show');
-    // Route::get('/{category}')
 });
 
 Route::post('/subscription', [SubscriberController::class, 'store']);
 
 Route::get('/countries', CountryController::class);
 
+Route::get('/site-feedbacks/check-eligibility', [\App\Http\Controllers\Front\SiteFeedbackController::class, 'checkEligibility']);
+
+Route::post('/site-feedbacks', [\App\Http\Controllers\Front\SiteFeedbackController::class, 'store']);
+
 Route::post('/contact', [ContactMessageController::class, 'send']);
+
+Route::get('/search', SearchController::class);
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
@@ -66,11 +76,19 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
 
+    Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::post('/conversations', [ConversationController::class, 'store']);
+
+    Route::get('/conversations/{id}/messages', [MessageController::class, 'index']);
+    Route::post('/conversations/{id}/messages', [MessageController::class, 'store']);
+
     Route::put('/subscription/{subscriptionStatus}', [SubscriberController::class, 'update']);
 
     Route::get('/payment-methods', PaymentMethodController::class);
 
     Route::get('/cities', \App\Http\Controllers\Front\CityController::class);
+
+    Route::post('/send-feedback/{product}', FeedbackController::class);
 
     Route::prefix('/cart')->controller(CartController::class)->group(function () {
 
@@ -106,6 +124,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/categories/all', [CategoryController::class, 'getAll']);
 
         // Route::get('/fetch-all-drivers', FetchAllDrivers::class);
+
+        Route::prefix('/customers-feedback')->controller(\App\Http\Controllers\Dashboard\CustomerFeedbackController::class)->group(function () {
+            Route::get('/', 'index');
+            Route::put('/{feedback}/change-status', 'update');
+            Route::delete('/{feedback}', 'destroy');
+        });
 
         Route::prefix('/products')->controller(ProductController::class)
             ->group(function () {
@@ -146,14 +170,24 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
         })->whereIn('userType', UserTypes::getAllTypes(UserTypes::Admin->value));
 
+        Route::prefix('/conversations')
+            ->middleware(['role:admin,moderator'])
+            ->controller(App\Http\Controllers\Dashboard\ConversationController::class)
+            ->group(function () {
+                Route::get('/', 'index');
+                Route::get('/{conversation}/messages', 'messages');
+                Route::post('/{conversation}/messages', 'sendMessage');
+            });
 
         Route::get('/abilities', AbilityController::class);
+
+        Route::apiResource('/discounts', \App\Http\Controllers\Dashboard\DiscountController::class);
 
         Route::get('/notifications', NotificationController::class);
 
         Route::apiResource('services', ServiceController::class)->except(['store', 'destroy']);
 
-
+        Route::get('/products/get-all', [ProductController::class, 'getAll']);
         Route::apiResource('/products', ProductController::class);
 
         Route::apiResource('/roles', RoleController::class);
@@ -169,3 +203,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::apiResource('/cities', CityController::class);
     });
 });
+
+// Broadcast::routes(['middleware' => ['auth:sanctum']]);
+
+Broadcast::routes(['middleware' => ['web', 'auth:sanctum']]);

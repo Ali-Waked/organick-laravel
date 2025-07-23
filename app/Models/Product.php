@@ -68,9 +68,13 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function discount(): BelongsTo
+    // public function discount(): BelongsTo
+    // {
+    //     return $this->belongsTo(Discount::class);
+    // }
+    public function discounts(): BelongsToMany
     {
-        return $this->belongsTo(Discount::class);
+        return $this->belongsToMany(Discount::class, 'discount_product');
     }
 
     public function tags(): BelongsToMany
@@ -78,9 +82,14 @@ class Product extends Model
         return $this->belongsToMany(Tag::class, 'product_tag');
     }
 
-    public function feadbacks(): MorphMany
+    public function feedbacks(): MorphMany
     {
-        return $this->morphMany(Feadback::class, 'assessable');
+        return $this->morphMany(Feedback::class, 'assessable');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->feedbacks()->avg('rating');
     }
 
     public function orderItems(): HasMany
@@ -107,6 +116,21 @@ class Product extends Model
     {
         return
             Auth::check() && Auth::user()->favorites()->where('product_id', $this->id)->exists();
+    }
+    protected function getCustomerPurchasedAttribute(): bool
+    {
+        return Auth::check() && Auth::user()->orders()->where('status', OrderStatus::Completed)->whereHas('items', function ($query) {
+            $query->where('product_id', $this->id);
+        })->exists();
+    }
+    public function getCanRateAttribute(): bool
+    {
+        if (!Auth::check())
+            return false;
+        $existing = Auth::user()->feedbacks()->where('assessable_type', 'product')
+            ->where('assessable_id', $this->id)
+            ->first();
+        return now()->lessThanOrEqualTo($existing->editable_until ?? now()->subDay()) || $this->getCustomerPurchasedAttribute();
     }
     public function scopeFilter(Builder $builder, ?object $data = null)
     {

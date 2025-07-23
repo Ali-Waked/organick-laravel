@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->appendToGroup('api', CheckApiKeyISValid::class);
         $middleware->append(UpdateUserLastActiveAt::class);
-        $middleware->alias(['MakingUserTypeMember' => MakingUserTypeMember::class]);
+        $middleware->alias(['MakingUserTypeMember' => MakingUserTypeMember::class, 'role' => \App\Http\Middleware\RoleMiddleware::class]);
         // $middleware->
         $middleware->statefulApi();
         $middleware->validateCsrfTokens([

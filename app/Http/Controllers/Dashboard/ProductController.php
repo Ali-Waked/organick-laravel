@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use App\Enums\CategoryStatus;
-use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
@@ -20,7 +18,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
-
+use Illuminate\Support\Collection;
 class ProductController extends Controller
 {
     public function __construct(
@@ -53,7 +51,7 @@ class ProductController extends Controller
         DB::beginTransaction();
 
         try {
-            $product =  $this->productService->createProduct($request->safe()->except(['tags']));
+            $product = $this->productService->createProduct($request->safe()->except(['tags']));
             // return $request->tags;
             if ($request->post('tags')) {
                 $this->tagService->createOrUpdateTags($product, $request->safe()->only('tags')['tags']);
@@ -169,5 +167,16 @@ class ProductController extends Controller
         return Response::json([
             'message' => "Delete Product {$product->name} successflly",
         ]);
+    }
+
+    /**
+     * Get All Products For Select
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAll(): Collection
+    {
+        Gate::authorize('view.product');
+        return Product::where('is_active', true)->select(['id', 'name', 'cover_image'])->get();
+
     }
 }

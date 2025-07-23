@@ -31,6 +31,6 @@ class NewsController extends Controller
      */
     public function show(News $news): News
     {
-        return $this->service->getNews($news, true);
+        return $this->service->getSingleNews($news, true);
     }
 }

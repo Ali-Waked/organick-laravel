@@ -11,6 +11,7 @@ use App\Traits\HasImage;
 use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentMethod extends Model
 {
@@ -48,6 +49,11 @@ class PaymentMethod extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 
     protected function icon(): Attribute

@@ -24,7 +24,8 @@ class AuthSocialiteController extends Controller
     {
         $user = Socialite::driver($driver)->user();
 
-        [$first_name, $last_name] = explode(' ', $user->getName(), 2);
+        $fullName = trim($user->getName());
+        [$first_name, $last_name] = array_pad(explode(' ', $fullName, 2), 2, '');
         // Log::info("gender {$user->gender}");
         // dd($user);
         $authUser = User::firstOrCreate([

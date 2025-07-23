@@ -48,7 +48,7 @@ class ProductService
      */
     public function getProductWithRelations(Product $product): Product
     {
-        return $product->append('image')
+        return $product->append(['image', 'AverageRating'])
             ->load(['category:id,name,slug', 'tags:name']);
         // ->loadAvg('evaluations as rating', 'rating')
         // ->loadSum('orderItems as total_sold', 'quantity');

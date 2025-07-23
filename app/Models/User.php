@@ -135,10 +135,27 @@ class User extends Authenticatable implements MustVerifyEmail
         return $cart->items();
     }
 
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
+    }
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
+    public function assignedConversations()
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_user')
+            ->withPivot('role')
+            ->wherePivot('role', 'moderator')
+            ->withTimestamps();
+    }
+
+    public function myConversations() // if customer
+    {
+        return $this->hasMany(Conversation::class, 'customer_id');
+    }
+
     public function fullName(): Attribute
     {
         return Attribute::make(
