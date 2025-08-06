@@ -74,8 +74,11 @@ class Product extends Model
     // }
     public function discounts(): BelongsToMany
     {
-        return $this->belongsToMany(Discount::class, 'discount_product');
+        return $this->belongsToMany(Discount::class, 'discount_product')->latest('discount_product.created_at')
+            ->limit(1);
+        ;
     }
+
 
     public function tags(): BelongsToMany
     {
@@ -96,6 +99,37 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class)
             ->whereRelation('order', 'status', '=', OrderStatus::Completed);
+    }
+    protected function totalRequests(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->orderItems()->sum('quantity'),
+        );
+    }
+    protected function currentDiscount(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->discounts()
+                ->where('is_active', true)
+                ->whereDate('ended_at', '>', now())
+                ->latest('discount_product.created_at')
+                ->first(),
+        );
+    }
+    public function getFinalPriceAttribute(): float
+    {
+        $price = $this->price;
+        $discount = $this->current_discount;
+
+        if ($discount) {
+            if ($discount->type === 'fixed') {
+                $price -= $discount->value;
+            } elseif ($discount->type === 'percentage') {
+                $price -= ($this->price * ($discount->value / 100));
+            }
+        }
+
+        return max($price, 0);
     }
 
     public function userReviews(int $userId = null, ?DateTime $dateTime = null): MorphMany

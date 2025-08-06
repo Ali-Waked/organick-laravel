@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserTypes;
+use App\Events\NewCustomerRegisteredEvent;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,8 @@ class AuthSocialiteController extends Controller
 {
     public function redirect(string $driver): RedirectResponse
     {
-        return Socialite::driver($driver)->scopes(['https://www.googleapis.com/auth/userinfo.profile'])->redirect();
+        return Socialite::driver($driver)->redirect();
+        // scopes(['https://www.googleapis.com/auth/userinfo.profile'])
     }
     public function callback(string $driver): RedirectResponse
     {
@@ -43,7 +45,9 @@ class AuthSocialiteController extends Controller
         ]);
 
         Auth::login($authUser);
-
+        if ($authUser->wasRecentlyCreated) {
+        }
+        event(new NewCustomerRegisteredEvent($authUser));
         return Redirect::away(path: Config::get('app.front-url'));
     }
 }

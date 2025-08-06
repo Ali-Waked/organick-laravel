@@ -32,7 +32,11 @@ class Discount extends Model
             return;
         }
         $builder->when($data->search ?? false, function ($builder, $value) {
-            return $builder->whereLike('name', "%$value%")->orWhereLike('description', "%$value%");
+            return $builder
+                ->where(function ($q) use ($value) {
+                    $q->whereLike('name', "%{$value}%")
+                        ->orWhereLike('description', "%{$value}%");
+                });
         });
 
         $builder->when($data->discount_mode ?? false, function ($builder, $value) use ($data) {
@@ -49,5 +53,6 @@ class Discount extends Model
         });
         strtolower($data->sortingOrder ?? '') == 'desc' ? $data->sortingOrder = 'desc' : $data->sortingOrder = 'asc';
         $builder->orderBy('created_at', $data->sortingOrder);
+        // info($builder->toSql(), $builder->getBindings());
     }
 }

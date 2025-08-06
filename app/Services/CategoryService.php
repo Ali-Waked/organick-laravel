@@ -15,9 +15,11 @@ class CategoryService
      */
     public function getCategoriesWithFilters(?string $filters): LengthAwarePaginator
     {
-        return Category::withCount(['products as active_products_count' => function ($builder): void {
-            $builder->active();
-        }])->filter(json_decode($filters))->paginate();
+        return Category::withCount([
+            'products as active_products_count' => function ($builder): void {
+                $builder->active();
+            }
+        ])->filter(json_decode($filters))->paginate();
     }
 
     public function createCategory(array $data): Category
@@ -29,6 +31,7 @@ class CategoryService
             'description' => $data['description'],
             'is_active' => $data['is_active'],
             'parent_id' => $data['parent_id'],
+            'is_featured' => $data['is_featured'],
             'cover_image' => $cover_image,
         ]);
 
@@ -37,7 +40,7 @@ class CategoryService
 
     public function getCategory(Category $category): Category
     {
-        return $category->append('image')
+        return $category->append(['image', 'average_rating'])
             ->loadCount('products')
             ->load(['children', 'parent']);
     }

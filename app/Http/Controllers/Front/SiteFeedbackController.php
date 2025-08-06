@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
+use App\Events\RateSiteEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SiteFeedbackRequest;
 use Illuminate\Http\Request;
@@ -15,11 +16,12 @@ class SiteFeedbackController extends Controller
     {
         ['can_rate' => $completedOrders, 'already_rated' => $alreadyRated] = $this->checkCanRate($request);
         if ($completedOrders && !$alreadyRated) {
-            SiteFeedback::create([
+            $feedback = SiteFeedback::create([
                 'customer_id' => $request->user()->id,
                 'rating' => $request->validated('rating'),
                 'comment' => $request->validated('comment'),
             ]);
+            event(new RateSiteEvent($request->user(), $feedback));
             return response()->json(['message' => 'Feedback submitted successfully.']);
         }
         return response()->json(['message' => 'You are not eligible to rate the site.'], 403);

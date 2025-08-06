@@ -21,9 +21,10 @@ class UserService
         $userInfo = array_merge([
             'password' => Hash::make($password),
             'avatar' => User::__callStatic('uploadImage', [$data['image'], User::FOLDER]),
-            'type' => $userType
+            'type' => $userType,
+            'email_verified_at' => now()
         ], $data);
-        $user =  User::create($userInfo);
+        $user = User::create($userInfo);
         // if (isset($data['socials'])) {
         //     $socials = [];
         //     foreach ($data['socials'] as $key => $value) {

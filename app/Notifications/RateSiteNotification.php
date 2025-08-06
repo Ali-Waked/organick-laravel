@@ -2,23 +2,22 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationType;
-use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Broadcasting\PrivateChannel;
+use App\Models\User;
+use App\Models\SiteFeedback;
+use App\Enums\NotificationType;
 
-class OrderCreatedNotification extends Notification
+class RateSiteNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(protected Order $order)
+    public function __construct(public User $customer, public SiteFeedback $feedback)
     {
         //
     }
@@ -30,7 +29,7 @@ class OrderCreatedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -41,19 +40,15 @@ class OrderCreatedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => "{$this->order->customer->first_name} {$this->order->customer->last_name} has created a new order.",
-            'type_notify' => NotificationType::ORDER_CREATED->value,
-            'order' => $this->order,
+            'message' => "The customer {$this->customer->full_name} evaluated the Site",
+            'type_notify' => NotificationType::SITE_RATED->value,
+            'feedback' => $this->feedback,
+            'customer' => $this->user,
         ];
     }
 
-    // public function receivesBroadcastNotificationsOn(): string
-    // {
-    //     return 'user.' . $this->id . '.notifications';
-    // }
-
     public function broadcastAs(): string
     {
-        return 'order.created';
+        return 'rate-site';
     }
 }

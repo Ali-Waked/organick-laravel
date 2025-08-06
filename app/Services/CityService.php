@@ -14,7 +14,7 @@ class CityService
 
     public function get(City $city): City
     {
-        return $city;
+        return $city->append(['number_of_orders', 'number_of_customers']);
     }
 
     public function create(array $data): City

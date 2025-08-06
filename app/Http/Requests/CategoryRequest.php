@@ -29,6 +29,7 @@ class CategoryRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'image' => [...$validation, 'image'],
             'is_active' => ['nullable', 'boolean'],
+            'is_featured' => ['nullable', 'boolean'],
             'parent_id' => ['nullable', 'int', Rule::exists('categories', 'id')]
         ];
     }

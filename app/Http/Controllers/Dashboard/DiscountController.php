@@ -20,7 +20,7 @@ class DiscountController extends Controller
 
     public function show(Discount $discount): Discount
     {
-        return $discount->load('ranges', 'products:id,name,cover_image');
+        return $discount->load('ranges', 'products:id,name,cover_image,price');
     }
 
     public function store(DiscountRequest $request): JsonResponse

@@ -26,6 +26,7 @@ class Category extends Model
         'slug',
         'cover_image',
         'is_active',
+        'is_featured',
         'parent_id',
         '_left',
         '_right',
@@ -73,6 +74,16 @@ class Category extends Model
         );
     }
 
+    protected function averageRating(): Attribute
+    {
+        return Attribute::get(function () {
+            return $this->products()
+                ->where('feedbacks.assessable_type', 'product')
+                ->join('feedbacks', 'feedbacks.assessable_id', '=', 'products.id')
+                ->avg('feedbacks.rating') ?? 0;
+        });
+    }
+
     public function scopeActive(Builder $builder)
     {
         $builder->where('is_active', true);
@@ -91,9 +102,11 @@ class Category extends Model
                 return $builder->orderBy($value, $data->sortingOrder);
             }
             if ($value == 'number_of_active_product') {
-                return $builder->withCount(['products as product_active_count' => function ($builder) {
-                    $builder->where('is_active', true);
-                }])->orderBy('product_active_count', $data->sortingOrder);
+                return $builder->withCount([
+                    'products as product_active_count' => function ($builder) {
+                        $builder->where('is_active', true);
+                    }
+                ])->orderBy('product_active_count', $data->sortingOrder);
             }
         });
         $builder->when($data?->status ?? false, function ($builder, $value) {

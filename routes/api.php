@@ -22,7 +22,7 @@ use App\Http\Controllers\Front\FavoriteController;
 use App\Http\Controllers\Front\FeedbackController;
 use App\Http\Controllers\Front\PaymentMethodController;
 use App\Http\Controllers\Dashboard\DashboardController;
-use App\Http\Controllers\Dashboard\NotificationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Dashboard\ServiceController;
 use App\Http\Controllers\Dashboard\CityController;
 use App\Http\Controllers\Front\SearchController;
@@ -32,6 +32,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\SubscriberController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Middleware\MarkNotificationToRead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ConversationController;
@@ -67,7 +68,7 @@ Route::post('/contact', [ContactMessageController::class, 'send']);
 
 Route::get('/search', SearchController::class);
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified', MarkNotificationToRead::class])->group(function () {
 
     Route::get('/auth/user', AuthController::class);
 
@@ -115,7 +116,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::post('/', 'store');
         Route::delete('/{product:id}', 'destroy');
     });
-
+    Route::get('/notifications', NotificationController::class);
     // Dashboard Routes
     Route::prefix('/dashboard')->group(function () {
 
@@ -182,8 +183,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/abilities', AbilityController::class);
 
         Route::apiResource('/discounts', \App\Http\Controllers\Dashboard\DiscountController::class);
-
-        Route::get('/notifications', NotificationController::class);
 
         Route::apiResource('services', ServiceController::class)->except(['store', 'destroy']);
 

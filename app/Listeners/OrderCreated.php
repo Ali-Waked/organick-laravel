@@ -3,9 +3,11 @@
 namespace App\Listeners;
 
 use App\Events\OrderCreated as OrderCreatedEvent;
+use App\Mail\OrderConfirmationMail;
 use App\Notifications\OrderCreatedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Mail;
 
 class OrderCreated
 {
@@ -22,9 +24,8 @@ class OrderCreated
      */
     public function handle(OrderCreatedEvent $event): void
     {
-        // Send a notification to the customer
-        // Send an email to the customer
-        OrderCreatedNotification::class;
-        $event->order->customer->notify(new OrderCreatedNotification($event->order));
+        // $event->order->customer->notify(new OrderCreatedNotification($event->order));
+        Mail::to($event->order->customer->email)
+            ->send(new OrderConfirmationMail($event->order));
     }
 }

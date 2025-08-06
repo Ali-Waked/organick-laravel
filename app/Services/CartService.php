@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\User;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,13 @@ class CartService
 
     public function store(array $data): CartItem|JsonResponse
     {
+        $product = Product::findOrFail($data['product_id']);
+        if ($product->quantity < $data['quantity']) {
+            return response()->json([
+                'message' => "Only {$product->quantity} items available in stock."
+            ], 422);
+        }
+
         $exists = Auth::user()->cartItems()->where('product_id', $data['product_id'])->exists();
         if ($exists) {
             return $this->updateProductQuantity($data['product_id'], $data['quantity']);
@@ -34,8 +42,16 @@ class CartService
     }
     public function update(int $productId, int $quantity): JsonResponse
     {
-        // return $this->updateProductQuantity($productId, $quantity);
-        $bool = Auth::user()->cartItems()->where('product_id', $productId)->update(['quantity' => $quantity]);
+        $product = Product::findOrFail($productId);
+        $cartItem = Auth::user()->cartItems()->where('product_id', $productId)->first();
+        // $newQuantity = $cartItem->quantity + $quantity;
+        info($quantity);
+        if ($product->quantity < $quantity) {
+            return response()->json([
+                'message' => "Only {$product->quantity} items available in stock."
+            ], 422);
+        }
+        $bool = $cartItem->update(['quantity' => $quantity]);
         return Response::json([
             'message' => 'updated ',
             'bool' => $bool

@@ -2,23 +2,21 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationType;
-use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Broadcasting\PrivateChannel;
+use App\Models\User;
+use App\Enums\NotificationType;
 
-class OrderCreatedNotification extends Notification
+class CustomerRegisteredNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(protected Order $order)
+    public function __construct(public User $customer)
     {
         //
     }
@@ -30,7 +28,7 @@ class OrderCreatedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['broadcast', 'database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -41,19 +39,17 @@ class OrderCreatedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => "{$this->order->customer->first_name} {$this->order->customer->last_name} has created a new order.",
-            'type_notify' => NotificationType::ORDER_CREATED->value,
-            'order' => $this->order,
+            'message' => "A new customer, {$this->customer->full_name}, has just registered.",
+            'type_notify' => NotificationType::CUSTOMER_REGISTERED->value,
+            'customer' => [
+                'id' => $this->customer->id,
+                'name' => $this->customer->full_name,
+                'email' => $this->customer->email,
+            ],
         ];
     }
-
-    // public function receivesBroadcastNotificationsOn(): string
-    // {
-    //     return 'user.' . $this->id . '.notifications';
-    // }
-
     public function broadcastAs(): string
     {
-        return 'order.created';
+        return 'customer.register';
     }
 }

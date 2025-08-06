@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethods;
+use App\Events\LowStockEvent;
+use App\Events\OutOfStockEvent;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Address;
@@ -12,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 class OrderService
 {
@@ -22,13 +25,11 @@ class OrderService
 
     public function getOrderWithRelation(Order $order): Order
     {
-        info($order->payment->paymentMethod->name);
         return $order->load(['customer.billingAddress.city', 'shippingAddress.city', 'items.product', 'payment:paymentable_id,status,payment_method_id', 'payment.paymentMethod:id,name', 'driver:id,first_name,last_name,email,type']);
     }
 
     public function updateStatus(Order $order, OrderStatus $orderStatus): bool
     {
-        info($orderStatus->value);
         return $order->update([
             'status' => $orderStatus,
         ]);
@@ -42,15 +43,27 @@ class OrderService
         return Order::create($data);
     }
 
-    public function AddItems(Order $order, Collection $items): Collection
+    public function AddItems(Order $order, Collection $items): Collection|Throwable
     {
-        $orderItems = $items->map(fn(CartItem $item): array => [
-            'order_id' => $order->id,
-            'product_id' => $item->product_id,
-            'quantity' => $item->quantity,
-            'product_name' => $item->product->name,
-            'price' => $item->product->price,
-        ])->toArray();
+        $orderItems = $items->map(function (CartItem $item) use ($order): array {
+            $product = $item->product;
+            if ($product->quantity < $item->quantity) {
+                throw new \Exception("The requested quantity for the product {$product->name} is not available.");
+            }
+            $product->decrement('quantity', $item->quantity);
+            if ($product->quantity == 0) {
+                event(new OutOfStockEvent($product));
+            } elseif ($product->quantity <= $product->low_stock_threshold) {
+                event(new LowStockEvent($product));
+            }
+            return [
+                'order_id' => $order->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'product_name' => $item->product->name,
+                'price' => $item->product->price,
+            ];
+        })->toArray();
 
         return $order->items()->createMany($orderItems);
     }

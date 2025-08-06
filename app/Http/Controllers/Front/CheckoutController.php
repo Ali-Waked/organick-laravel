@@ -71,7 +71,7 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            OrderCreated::dispatch($order->load(['customer', 'shippingAddress.city']));
+            OrderCreated::dispatch($order->load(['customer:id,first_name,last_name,email,avatar,created_at', 'shippingAddress.city']));
 
             return Response::json([
                 'message' => 'created order successfly',

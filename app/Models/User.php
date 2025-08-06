@@ -76,6 +76,11 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'user.' . $this->id . '.notifications';
+    }
+
     // public function scopeMember(Builder $builder, ?object $filter)
     // {
     //     $builder->where('type', UserTypes::Member);

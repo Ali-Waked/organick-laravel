@@ -10,14 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('contact_messages', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('slug')->unique();
-            $table->string('cover_image');
-            $table->boolean('is_active')->default(false);
-            $table->nestedSet(); // parent_id, _left, _right
+            $table->string('email');
+            $table->string('subject')->nullable();
+            $table->text('message');
+            $table->text('reply_message')->nullable();
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('contact_messages');
     }
 };

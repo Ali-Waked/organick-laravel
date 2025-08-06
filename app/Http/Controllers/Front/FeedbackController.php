@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Enums\OrderStatus;
+use App\Events\RateProductEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\FeedbackRequest;
 use App\Models\Feedback;
@@ -32,6 +33,7 @@ class FeedbackController extends Controller
                 'editable_until' => now()->addDays(7),
             ]);
             $feedback->load(['customer:id,first_name,last_name,avatar']);
+            event(new RateProductEvent($user, $product, $feedback));
             return response()->json(['message' => 'Feedback submitted successfully.', 'feedback' => $feedback]);
         }
 
@@ -41,6 +43,7 @@ class FeedbackController extends Controller
                 'comment' => $request->comment,
             ]);
             $existing->load(['customer:id,first_name,last_name,avatar']);
+            event(new RateProductEvent($user, $product, $existing));
             return response()->json(['message' => 'Feedback updated successfully.', 'feedback' => $existing]);
         }
         return response()->json([
