@@ -2,24 +2,21 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationType;
-use App\Models\ContactMessage;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Config;
+use App\Models\Subscriber;
+use App\Enums\NotificationType;
 
-class ContactMessageNotification extends Notification
+class NewNewsletterSubscriptionNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public ContactMessage $contactMessage)
+    public function __construct(public Subscriber $subscriber)
     {
         //
     }
@@ -42,14 +39,14 @@ class ContactMessageNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => "New contact message received from " . $this->contactMessage->email,
-            'type_notify' => NotificationType::CONTACT_MESSAGE->value,
-            'data' => $this->contactMessage,
+            'message' => "New newsletter subscription from {$this->subscriber->email}",
+            'type_notify' => NotificationType::NEWSLETTER_SUBSCRIBED->value,
+            'subscriber' => $this->subscriber,
         ];
     }
-
     public function broadcastAs(): string
     {
-        return 'contact-message';
+        return 'new-subscriber';
     }
+
 }

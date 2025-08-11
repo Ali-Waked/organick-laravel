@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\ContactMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -17,7 +18,7 @@ class SendContactMessage extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public array $data)
+    public function __construct(public ContactMessage $contactMessage)
     {
         //
     }
@@ -28,9 +29,9 @@ class SendContactMessage extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->data['subject'],
-            to: Config::get('mail.from.address'),
-            from: $this->data['email'],
+            subject: $this->contactMessage->subject,
+            from: Config::get('mail.from.address'),
+            to: $this->contactMessage->email,
         );
     }
 

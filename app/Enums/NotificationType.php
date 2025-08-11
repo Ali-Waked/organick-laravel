@@ -26,6 +26,7 @@ enum NotificationType: string
     case CUSTOMER_REGISTERED = 'customer_registered';
     case NEWSLETTER_SUBSCRIBED = 'newsletter_subscribed';
     case CONTACT_MESSAGE = 'contact_message';
+    case CHAT_MESSAGE = 'chat_message';
 
     // Ratings
     case PRODUCT_RATED = 'product_rated';

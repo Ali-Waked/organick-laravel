@@ -2,24 +2,22 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationType;
-use App\Models\ContactMessage;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Config;
+use App\Models\User;
+use App\Models\Message;
+use App\Enums\NotificationType;
 
-class ContactMessageNotification extends Notification
+class NewChatMessageNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public ContactMessage $contactMessage)
+    public function __construct(public User $customer, public Message $message, public int $conversationId)
     {
         //
     }
@@ -42,14 +40,20 @@ class ContactMessageNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => "New contact message received from " . $this->contactMessage->email,
-            'type_notify' => NotificationType::CONTACT_MESSAGE->value,
-            'data' => $this->contactMessage,
+            'message' => "New chat message from customer {$this->customer->full_name}",
+            'type_notify' => NotificationType::CHAT_MESSAGE->value,
+            'conversation_id' => $this->conversationId,
+            'customer' => [
+                'id' => $this->customer->id,
+                'name' => $this->customer->full_name,
+                'email' => $this->customer->email,
+            ],
+            'message' => $this->message,
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'contact-message';
+        return 'chat-message';
     }
 }

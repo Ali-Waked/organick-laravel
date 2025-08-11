@@ -27,6 +27,7 @@ class SendContactNotification
      */
     public function handle(ContactMessageSubmitted $event): void
     {
-        Notification::send(User::where('type', UserTypes::Admin)->get(), new ContactMessageNotification($event->data));
+        // Notification::send(User::whereIn('type', [UserTypes::Admin->value, UserTypes::Moderator->value])->get(), new ContactMessageNotification($event->data));
+        Notification::send(User::whereIn('type', [UserTypes::Admin->value, UserTypes::Moderator->value])->get(), new ContactMessageNotification($event->contactMessage));
     }
 }

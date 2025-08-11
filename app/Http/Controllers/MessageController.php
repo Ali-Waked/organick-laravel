@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Events\NewChatMessageEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Message;
@@ -61,6 +62,9 @@ class MessageController extends Controller
 
         $conversation->save();
         event(new MessageSent($message));
+        if ($user->type->value == UserTypes::Customer->value) {
+            event(new NewChatMessageEvent($user, $message, $conversationId));
+        }
 
 
         return response()->json([

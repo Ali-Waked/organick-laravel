@@ -56,7 +56,12 @@ Route::prefix('/products')->controller(\App\Http\Controllers\Front\ProductContro
     Route::get('/{product}', 'show');
 });
 
-Route::post('/subscription', [SubscriberController::class, 'store']);
+Route::prefix('subscription')->controller(SubscriberController::class)->group(function () {
+    Route::post('/', 'store');
+    Route::get('/verify/{token}', 'verify');
+    Route::put('/subscription/{subscriber}', 'update')->middleware('auth:sanctum');
+});
+// Route::post('/subscription', [SubscriberController::class, 'store']);
 
 Route::get('/countries', CountryController::class);
 
@@ -64,7 +69,7 @@ Route::get('/site-feedbacks/check-eligibility', [\App\Http\Controllers\Front\Sit
 
 Route::post('/site-feedbacks', [\App\Http\Controllers\Front\SiteFeedbackController::class, 'store']);
 
-Route::post('/contact', [ContactMessageController::class, 'send']);
+Route::post('/contact', [ContactMessageController::class, 'store']);
 
 Route::get('/search', SearchController::class);
 
@@ -82,8 +87,6 @@ Route::middleware(['auth:sanctum', 'verified', MarkNotificationToRead::class])->
 
     Route::get('/conversations/{id}/messages', [MessageController::class, 'index']);
     Route::post('/conversations/{id}/messages', [MessageController::class, 'store']);
-
-    Route::put('/subscription/{subscriptionStatus}', [SubscriberController::class, 'update']);
 
     Route::get('/payment-methods', PaymentMethodController::class);
 
@@ -179,6 +182,10 @@ Route::middleware(['auth:sanctum', 'verified', MarkNotificationToRead::class])->
                 Route::get('/{conversation}/messages', 'messages');
                 Route::post('/{conversation}/messages', 'sendMessage');
             });
+
+        Route::get('/contact', [ContactMessageController::class, 'index']);
+        Route::get('/contact/{contactMessage}', [ContactMessageController::class, 'show']);
+        Route::post('/contact/{contactMessage}/send-reply', [ContactMessageController::class, 'send']);
 
         Route::get('/abilities', AbilityController::class);
 

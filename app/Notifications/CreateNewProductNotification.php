@@ -2,24 +2,21 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationType;
-use App\Models\ContactMessage;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Messages\DatabaseMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Config;
+use App\Models\Product;
+use App\Enums\NotificationType;
 
-class ContactMessageNotification extends Notification
+class CreateNewProductNotification extends Notification
 {
     use Queueable;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(public ContactMessage $contactMessage)
+    public function __construct(public Product $product)
     {
         //
     }
@@ -42,14 +39,9 @@ class ContactMessageNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => "New contact message received from " . $this->contactMessage->email,
-            'type_notify' => NotificationType::CONTACT_MESSAGE->value,
-            'data' => $this->contactMessage,
+            'message' => "A new product {$this->product->name} has been added.",
+            'type_notify' => NotificationType::PRODUCT_ADDED->value,
+            'product' => $this->product,
         ];
-    }
-
-    public function broadcastAs(): string
-    {
-        return 'contact-message';
     }
 }

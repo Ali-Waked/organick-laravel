@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Subscriber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -9,19 +10,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\URL;
 
-class VeryfiyEmailForSubscriper extends Mailable
+class WelcomeSubscriberMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public string $unsubscribeUrl;
     /**
      * Create a new message instance.
      */
-    public string $verifyUrl;
-    public function __construct(public string $token, public string $name = '')
+    public function __construct(public Subscriber $subscriber)
     {
-        $this->verifyUrl = URL::signedRoute('subscriber.verify', ['token' => $token]);
+        // $this->unsubscribeUrl = route('subscriber.unsubscribe', ['email' => $subscriber->email]);
+        $this->unsubscribeUrl = Config::get('app.front-url') . '/unsubscribe?email=' . $subscriber->email;
     }
 
     /**
@@ -30,8 +31,9 @@ class VeryfiyEmailForSubscriper extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Thanks for Subscribing to the Organick Newsletter! 🌱',
+            subject: 'Welcome to Organick! 🌿 Thank You for Subscribing',
             from: Config::get('mail.from.address'),
+            to: $this->subscriber->email,
         );
     }
 
@@ -41,7 +43,7 @@ class VeryfiyEmailForSubscriper extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.news.joined_message',
+            view: 'emails.news.welcome_message',
         );
     }
 

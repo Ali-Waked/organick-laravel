@@ -24,6 +24,6 @@ class SendEmailVerificationForSubscriber
      */
     public function handle(SendVerifyEmailToSubscriber $event): void
     {
-        Mail::to($event->subscriber->email)->send(new VeryfiyEmailForSubscriper($event->subscriber->email, $event->name));
+        Mail::to($event->subscriber->email)->send(new VeryfiyEmailForSubscriper($event->subscriber->verification_token, $event->name));
     }
 }

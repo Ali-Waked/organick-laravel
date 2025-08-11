@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\ContactMessage;
+use App\Models\Subscriber;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,14 +11,14 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ContactMessageSubmitted
+class NewNewsletterSubscriptionEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(public ContactMessage $contactMessage)
+    public function __construct(public Subscriber $subscriber)
     {
         //
     }

@@ -15,14 +15,16 @@ class Subscriber extends Model
 
     protected $fillable = [
         'email',
-        'status',
+        'is_subscribed',
         'email_verified_at',
+        'user_id',
+        'verification_token',
     ];
 
     protected function casts(): array
     {
         return [
-            'status' => SubscriptionStatus::class,
+            'is_subscribed' => 'boolean',
             'email_verified_at' => 'datetime',
         ];
     }
