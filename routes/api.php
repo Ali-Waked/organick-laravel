@@ -127,6 +127,12 @@ Route::middleware(['auth:sanctum', 'verified', MarkNotificationToRead::class])->
 
         Route::get('/categories/all', [CategoryController::class, 'getAll']);
 
+        Route::prefix('news/subscribers')->controller(\App\Http\Controllers\Dashboard\SubscriberController::class)->group(function () {
+            Route::get('/', 'index');
+            Route::put('/{subscriber}', 'update');
+            Route::get('/{subscriber}', 'show');
+        });
+
         // Route::get('/fetch-all-drivers', FetchAllDrivers::class);
 
         Route::prefix('/customers-feedback')->controller(\App\Http\Controllers\Dashboard\CustomerFeedbackController::class)->group(function () {
